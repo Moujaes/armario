@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O teste do armário · Moujaës</title>
+<meta name="description" content="Conta as peças do seu armário e quantas você usou nos últimos 30 dias. Depois, o que fazer com as paradas e a regra antes da próxima compra.">
+<meta property="og:title" content="O teste do armário · Moujaës">
+<meta property="og:description" content="Conta as peças do seu armário e quantas você usou nos últimos 30 dias.">
+<meta name="theme-color" content="#F3EEE4">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="assets/avatar.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --papel: #F3EEE4;
+    --ficha: #F9F5EC;
+    --tinta: #1C1A17;
+    --sepia: #C2B596;
+    --bordo: #4C1E26;
+    --cinza: #6B655C;
+    --madeira: #E7DDC4;
+    --serifa: "Bodoni Moda", "Bodoni 72", Didot, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --mola: cubic-bezier(.3, 1.7, .5, 1);
+    /* grão de papel: ruído fino em tinta, e manchas largas por baixo */
+    --grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .11 0 0 0 0 .1 0 0 0 0 .09 .62 0 0 0 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --manchas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .011' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .54 0 0 0 0 .35 0 0 0 0 .2 .34 0 0 0 -.11'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+    --grao-claro: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .95 0 0 0 0 .93 0 0 0 0 .89 .4 0 0 0 -.145'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--grao), var(--manchas), var(--papel);
+    color: var(--tinta);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  .pagina { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+  .rotulo {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--cinza);
+  }
+
+  /* abertura */
+  .topo { padding: 26px 0 0; text-align: center; }
+  .topo img { width: 190px; max-width: 56%; height: auto; display: block; margin: 0 auto; }
+  .abre { padding: 22px 0 4px; }
+  h1 {
+    font-family: var(--serifa);
+    font-weight: 500;
+    font-size: clamp(36px, 10.6vw, 56px);
+    line-height: 1.02;
+    letter-spacing: -.012em;
+    margin: 14px 0 18px;
+    text-wrap: balance;
+  }
+  h1 em { font-style: italic; color: var(--bordo); }
+  .lead { margin: 0; max-width: 34em; }
+
+  /* fotos do arquivo, soltas sobre o papel */
+  .foto {
+    position: absolute;
+    display: block;
+    height: auto;
+    box-shadow: 0 1px 2px rgba(28, 26, 23, .22), 0 10px 22px rgba(28, 26, 23, .12);
+  }
+  .soltas { position: relative; max-width: 400px; aspect-ratio: 6 / 5; margin: 30px auto 8px; }
+  .soltas .f1 { width: 66%; left: 0; top: 3%; transform: rotate(-3deg); }
+  .soltas .f2 { width: 60%; right: 0; top: 45%; transform: rotate(2.5deg); }
+
+  /* a ficha */
+  .ficha {
+    position: relative;
+    background: var(--grao), var(--ficha);
+    border: 1px solid var(--sepia);
+    margin: 30px -6px 0;
+    box-shadow: 0 1px 0 rgba(28, 26, 23, .16), 0 18px 34px -22px rgba(28, 26, 23, .5);
+  }
+  .placar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 9px 12px;
+    padding: 13px 15px 12px;
+    background: var(--grao), var(--ficha);
+    border-bottom: 1px solid var(--tinta);
+  }
+  #conta {
+    display: inline-block;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    transform-origin: 100% 60%;
+  }
+  #conta.bate { animation: bate .34s var(--mola); }
+  @keyframes bate { from { transform: scale(1.22); } to { transform: scale(1); } }
+  .pips { grid-column: 1 / -1; display: flex; gap: 4px; }
+  .pips i { flex: 1; height: 4px; background: var(--sepia); transition: background-color .2s; }
+  .pips i.cheio { background: var(--tinta); }
+  .completa .pips i.cheio { background: var(--bordo); }
+
+  .parte { padding: 22px 15px 24px; border-bottom: 1px solid var(--sepia); scroll-margin-top: 62px; }
+  .etiqueta {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--cinza);
+    margin: 0 0 8px;
+    transition: color .2s;
+  }
+  .q {
+    font-family: var(--serifa);
+    font-weight: 500;
+    font-size: clamp(24px, 6.7vw, 29px);
+    line-height: 1.1;
+    letter-spacing: -.005em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .q em { font-style: italic; color: var(--bordo); }
+  .porque { margin: 9px 0 0; font-size: 14px; line-height: 1.5; color: var(--cinza); }
+  .feita .etiqueta-conta, .pergunta.respondida .etiqueta { color: var(--bordo); }
+
+  /* 01 · a conta: dois contadores */
+  .campos { display: grid; gap: 16px; margin-top: 18px; }
+  .campo { display: grid; gap: 8px; }
+  .campo label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; font-weight: 500; }
+  .contador { display: grid; grid-template-columns: 54px minmax(0, 1fr) 54px; height: 58px; border: 1.5px solid var(--tinta); background: rgba(255, 255, 255, .6); box-shadow: inset 0 1px 2px rgba(28, 26, 23, .1), 0 2px 0 rgba(28, 26, 23, .14); transition: border-color .18s; }
+  .contador:focus-within { border-color: var(--bordo); }
+  .contador button {
+    font-family: var(--mono);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--tinta);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color .15s, color .15s;
+  }
+  .contador button:first-child { border-right: 1px solid var(--sepia); }
+  .contador button:last-child { border-left: 1px solid var(--sepia); }
+  .contador button:active { background: var(--bordo); color: var(--papel); }
+  .contador button:focus-visible { outline: 2px solid var(--bordo); outline-offset: -4px; }
+  .contador input {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+    font-family: var(--serifa);
+    font-weight: 500;
+    font-size: 30px;
+    color: var(--tinta);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .contador input::-webkit-outer-spin-button, .contador input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .contador input::placeholder { color: var(--sepia); }
+  .contador input:focus { outline: none; }
+  .campo.cheio .contador { border-color: var(--bordo); }
+  .aviso { margin: 8px 0 0; font-size: 12px; color: var(--bordo); }
+  .aviso:empty { display: none; }
+
+  /* a leitura da conta */
+  .leitura { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--sepia); }
+  .usou { font-family: var(--serifa); font-weight: 500; font-size: clamp(26px, 7.6vw, 34px); line-height: 1.06; margin: 0; }
+  .usou em { font-style: italic; color: var(--bordo); }
+  .arara { position: relative; height: 34px; margin: 16px 0 10px; border: 1px solid var(--tinta); background: var(--grao), var(--madeira); box-shadow: 0 2px 0 rgba(28, 26, 23, .14); overflow: hidden; }
+  .arara .usadas { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--grao-claro), var(--bordo); transition: width .8s cubic-bezier(.3, 1.3, .5, 1); }
+  .arara .fios { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(28, 26, 23, .28) 0 1px, transparent 1px 10px); mix-blend-mode: multiply; }
+  .legenda-arara { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--cinza); }
+  .legenda-arara b { font-weight: 600; color: var(--bordo); }
+  .fracao { margin: 12px 0 0; font-size: 14px; }
+
+  /* 02 · as paradas: três cartões */
+  .pilhas { display: grid; gap: 12px; margin-top: 18px; }
+  .cartao {
+    position: relative;
+    padding: 16px 16px 17px 60px;
+    background: var(--grao), #FCFAF5;
+    border: 1px solid var(--sepia);
+    box-shadow: 0 1px 0 rgba(28, 26, 23, .12), 0 8px 16px -12px rgba(28, 26, 23, .45);
+  }
+  .cartao:nth-child(1) { transform: rotate(-.6deg); }
+  .cartao:nth-child(2) { transform: rotate(.5deg); }
+  .cartao:nth-child(3) { transform: rotate(-.3deg); }
+  .cartao .n { position: absolute; left: 16px; top: 15px; font-family: var(--serifa); font-style: italic; font-size: 30px; line-height: 1; color: var(--bordo); }
+  .cartao h3 { font-family: var(--serifa); font-weight: 500; font-size: 24px; line-height: 1.1; margin: 0 0 5px; }
+  .cartao p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cinza); }
+
+  /* 03 · as três perguntas */
+  .perguntas { list-style: none; margin: 16px 0 0; padding: 0; }
+  .pergunta { padding: 18px 0 20px; border-top: 1px solid var(--sepia); transition: background-color .2s; }
+  .pergunta .q { font-size: clamp(22px, 6.2vw, 27px); }
+  .respostas { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .respostas input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+  .resp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    min-height: 54px;
+    padding: 0 10px;
+    border: 1.5px solid var(--tinta);
+    background: rgba(255, 255, 255, .6);
+    box-shadow: inset 0 1px 2px rgba(28, 26, 23, .1), 0 2px 0 rgba(28, 26, 23, .14);
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .3s var(--mola), background-color .18s, color .18s, border-color .18s, box-shadow .18s;
+  }
+  .resp svg { width: 22px; height: 22px; flex: none; overflow: visible; }
+  .resp .quadro { fill: none; stroke: currentColor; stroke-width: 1.5; }
+  .resp .visto {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 34;
+    stroke-dashoffset: 34;
+    transition: stroke-dashoffset .26s cubic-bezier(.3, .7, .2, 1);
+  }
+  .resp:active { transform: scale(.95); }
+  .respostas input:checked + .resp {
+    background: var(--grao-claro), var(--bordo);
+    border-color: var(--bordo);
+    color: var(--papel);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .25), 0 1px 0 rgba(28, 26, 23, .1);
+    transform: translateY(1px);
+  }
+  .respostas input:checked + .resp .visto { stroke-dashoffset: 0; }
+  .respostas input:focus-visible + .resp { outline: 2px solid var(--bordo); outline-offset: 3px; }
+  @media (hover: hover) {
+    .resp:hover, .contador button:hover { border-color: var(--bordo); color: var(--bordo); }
+  }
+
+  /* o resultado */
+  .resultado { padding: 22px 15px 24px; }
+  .laudo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    gap: 14px;
+    align-items: center;
+    min-height: 132px;
+  }
+  .resumo { margin: 0 0 6px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--cinza); }
+  .veredito {
+    font-family: var(--serifa);
+    font-weight: 500;
+    font-size: clamp(26px, 7.4vw, 34px);
+    line-height: 1.04;
+    margin: 0 0 8px;
+  }
+  .completa .veredito { font-style: italic; color: var(--bordo); font-size: clamp(44px, 13vw, 58px); line-height: .96; margin-bottom: 12px; }
+  .linha { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cinza); }
+  .completa .linha { color: var(--tinta); }
+  .limpar {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--cinza);
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--sepia);
+    border-radius: 0;
+    padding: 12px 0 4px;
+    margin-top: 6px;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  .limpar:hover, .limpar:focus-visible { color: var(--bordo); border-color: var(--bordo); outline: none; }
+  .limpar[hidden] { display: none; }
+  .vaga {
+    position: relative;
+    aspect-ratio: 150 / 108;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed var(--sepia);
+    border-radius: 50%;
+    transform: rotate(-7deg);
+    transition: border-color .2s;
+  }
+  .vaga .rotulo { font-size: 9.5px; color: var(--sepia); transition: opacity .15s; }
+  .vaga .carimbo { position: absolute; inset: -5%; width: 110%; height: auto; opacity: 0; }
+  .completa .vaga { border-color: transparent; }
+  .completa .vaga .rotulo { opacity: 0; }
+  .completa .vaga .carimbo { opacity: 1; }
+  .carimbando .vaga .carimbo { animation: carimba .42s cubic-bezier(.2, .8, .3, 1) .5s both; }
+  @keyframes carimba {
+    0% { opacity: 0; transform: scale(1.7); }
+    55% { opacity: 1; transform: scale(.95); }
+    78% { transform: scale(1.025); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .regra { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid var(--sepia); font-size: 12px; line-height: 1.55; color: var(--cinza); }
+  .fonte { margin: 22px 4px 0; font-size: 11.5px; line-height: 1.55; color: var(--cinza); }
+
+  /* a frase */
+  .faixa {
+    background: var(--grao-claro), var(--bordo);
+    color: var(--papel);
+    margin-top: 46px;
+    padding: 46px 0 50px;
+  }
+  .faixa .rotulo { color: var(--papel); opacity: .74; }
+  .grande {
+    font-family: var(--serifa);
+    font-weight: 500;
+    font-size: clamp(38px, 11.4vw, 92px);
+    line-height: .98;
+    letter-spacing: -.018em;
+    margin: 16px 0 0;
+  }
+  .grande span { display: block; }
+  .grande .volta { margin-top: .26em; }
+  .grande em { font-style: italic; }
+  .guarda { margin: 30px 0 0; font-size: 13px; letter-spacing: .04em; opacity: .86; }
+
+  /* rodapé */
+  .rodape { text-align: center; padding: 56px 0 44px; }
+  .mesa-fim { position: relative; width: 290px; max-width: 88%; aspect-ratio: 290 / 250; margin: 0 auto 30px; }
+  .mesa-fim .foto { width: 70%; right: 0; top: 2%; transform: rotate(2deg); }
+  .mesa-fim .carimbo { position: absolute; width: 45%; height: auto; left: 2%; bottom: 0; transform: rotate(-7deg); }
+  .rodape .wordmark { width: 230px; max-width: 70%; height: auto; display: block; margin: 0 auto 18px; }
+  .rodape .links { display: flex; justify-content: center; gap: 26px; }
+  .rodape a { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--tinta); text-underline-offset: 4px; padding: 8px 0; }
+  .rodape a:hover { color: var(--bordo); }
+  .rodape .arroba { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; color: var(--cinza); margin-top: 8px; }
+
+  @media (min-width: 560px) {
+    .ficha { margin-left: 0; margin-right: 0; }
+    .placar { padding: 15px 22px 13px; }
+    .parte { padding: 26px 22px 28px; }
+    .campos { grid-template-columns: 1fr 1fr; }
+    .respostas { max-width: 380px; }
+    .resultado { padding: 26px 22px 28px; }
+    .laudo { grid-template-columns: minmax(0, 1fr) 150px; }
+  }
+  @media (min-width: 980px) {
+    .topo { text-align: left; padding-top: 34px; }
+    .topo img { margin: 0; margin-left: -16px; }
+    .duas { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 60px; align-items: start; }
+    .abre { position: sticky; top: 12px; padding-top: 30px; }
+    .soltas { margin-left: 0; }
+    .ficha { margin-top: 34px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #conta.bate, .carimbando .vaga .carimbo { animation: none; }
+    .resp, .resp .visto, .pips i, .arara .usadas { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="pagina">
+
+  <div class="topo">
+    <img src="assets/moujaes-logo_transp.svg" alt="Moujaës" width="190" height="140">
+  </div>
+
+  <main class="duas">
+
+    <header class="abre">
+      <div class="rotulo">Material do vídeo · para contar</div>
+      <h1>Quantas peças você usou <em>de verdade?</em></h1>
+      <p class="lead">Abre o armário e conta tudo. Depois conta só o que você vestiu nos últimos 30 dias.</p>
+      <div class="soltas">
+        <img class="foto f1" src="assets/arquivo-p03-04.jpg" alt="Foto de arquivo: uma pista de aeroporto vista de um terraço." width="720" height="511">
+        <img class="foto f2" src="assets/arquivo-p10-02.jpg" alt="Foto de arquivo: um jardim com fonte visto de uma sacada." width="720" height="521">
+      </div>
+    </header>
+
+    <div>
+    <section class="ficha" id="ficha" aria-label="O teste do armário">
+      <div class="placar">
+        <span class="rotulo">O teste</span>
+        <output id="conta" aria-live="polite">0 de 5</output>
+        <div class="pips" id="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="parte" id="parte-conta">
+        <span class="etiqueta etiqueta-conta">01 · A conta</span>
+        <h2 class="q">Conta as peças. Todas, até as do fundo.</h2>
+        <p class="porque">Roupa, sapato e bolsa. Pode ser de cabeça, não precisa ser exato.</p>
+
+        <div class="campos">
+          <div class="campo" id="c-total">
+            <label for="total">Peças no armário</label>
+            <div class="contador">
+              <button type="button" data-alvo="total" data-passo="-1" aria-label="Menos uma peça no armário">−</button>
+              <input id="total" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="9999" placeholder="0" autocomplete="off">
+              <button type="button" data-alvo="total" data-passo="1" aria-label="Mais uma peça no armário">+</button>
+            </div>
+          </div>
+          <div class="campo" id="c-usadas">
+            <label for="usadas">Usadas nos últimos 30 dias</label>
+            <div class="contador">
+              <button type="button" data-alvo="usadas" data-passo="-1" aria-label="Menos uma peça usada">−</button>
+              <input id="usadas" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="9999" placeholder="0" autocomplete="off">
+              <button type="button" data-alvo="usadas" data-passo="1" aria-label="Mais uma peça usada">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="aviso" id="aviso" aria-live="polite"></p>
+
+        <div class="leitura" aria-live="polite">
+          <p class="usou" id="usou">Você usou — de —.</p>
+          <div class="arara" aria-hidden="true"><i class="usadas" id="barra"></i><i class="fios"></i></div>
+          <div class="legenda-arara" aria-hidden="true"><span><b id="leg-usadas">0</b> usadas</span><span><b id="leg-paradas">0</b> paradas</span></div>
+          <p class="fracao" id="fracao">Preenche os dois números.</p>
+        </div>
+      </div>
+
+      <div class="parte" id="parte-paradas">
+        <span class="etiqueta">02 · As que ficaram paradas</span>
+        <h2 class="q" id="paradas-t">Cada parada cabe numa destas <em>três pilhas.</em></h2>
+        <div class="pilhas">
+          <div class="cartao">
+            <span class="n">1</span>
+            <h3>Consertar</h3>
+            <p>Caiu um botão, abriu a costura, travou o zíper. Conserta e ela volta para o uso.</p>
+          </div>
+          <div class="cartao">
+            <span class="n">2</span>
+            <h3>Ajustar</h3>
+            <p>Leva na costureira.</p>
+          </div>
+          <div class="cartao">
+            <span class="n">3</span>
+            <h3>Passar adiante</h3>
+            <p>Não serve, não combina, você não sente falta. Dá para alguém que vai usar.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="parte" id="parte-regra">
+        <span class="etiqueta">03 · Antes da próxima compra</span>
+        <h2 class="q">Três perguntas antes de levar <em>a próxima.</em></h2>
+        <p class="porque">Pensa na peça que você quer comprar agora.</p>
+        <ol class="perguntas">
+          <li class="pergunta" id="q1">
+            <span class="etiqueta">Pergunta 1</span>
+            <h3 class="q" id="q1-t">Já tenho uma peça parecida que eu não uso?</h3>
+            <div class="respostas" role="radiogroup" aria-labelledby="q1-t">
+              <input type="radio" name="p1" id="p1-sim" value="s">
+              <label class="resp" for="p1-sim"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="quadro" x="1.5" y="3.5" width="16" height="16"/><path class="visto" d="M4.5 11.5 L9 16.5 L20 2.5"/></svg>Sim</label>
+              <input type="radio" name="p1" id="p1-nao" value="n">
+              <label class="resp" for="p1-nao"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="quadro" x="1.5" y="3.5" width="16" height="16"/><path class="visto" d="M4.5 11.5 L9 16.5 L20 2.5"/></svg>Não</label>
+            </div>
+          </li>
+          <li class="pergunta" id="q2">
+            <span class="etiqueta">Pergunta 2</span>
+            <h3 class="q" id="q2-t">Sei com quais três peças isso combina?</h3>
+            <div class="respostas" role="radiogroup" aria-labelledby="q2-t">
+              <input type="radio" name="p2" id="p2-sim" value="s">
+              <label class="resp" for="p2-sim"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="quadro" x="1.5" y="3.5" width="16" height="16"/><path class="visto" d="M4.5 11.5 L9 16.5 L20 2.5"/></svg>Sim</label>
+              <input type="radio" name="p2" id="p2-nao" value="n">
+              <label class="resp" for="p2-nao"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="quadro" x="1.5" y="3.5" width="16" height="16"/><path class="visto" d="M4.5 11.5 L9 16.5 L20 2.5"/></svg>Não</label>
+            </div>
+          </li>
+          <li class="pergunta" id="q3">
+            <span class="etiqueta">Pergunta 3</span>
+            <h3 class="q" id="q3-t">Eu consertaria se rasgasse?</h3>
+            <div class="respostas" role="radiogroup" aria-labelledby="q3-t">
+              <input type="radio" name="p3" id="p3-sim" value="s">
+              <label class="resp" for="p3-sim"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="quadro" x="1.5" y="3.5" width="16" height="16"/><path class="visto" d="M4.5 11.5 L9 16.5 L20 2.5"/></svg>Sim</label>
+              <input type="radio" name="p3" id="p3-nao" value="n">
+              <label class="resp" for="p3-nao"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="quadro" x="1.5" y="3.5" width="16" height="16"/><path class="visto" d="M4.5 11.5 L9 16.5 L20 2.5"/></svg>Não</label>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="resultado" id="resultado">
+        <div class="laudo">
+          <div aria-live="polite">
+            <p class="resumo" id="resumo">Seu armário</p>
+            <p class="veredito" id="veredito">Nada preenchido.</p>
+            <p class="linha" id="linha">Começa contando as peças.</p>
+            <button class="limpar" id="limpar" type="button" hidden>Começar de novo</button>
+          </div>
+          <div class="vaga" aria-hidden="true">
+            <span class="rotulo">Carimbo</span>
+            <img class="carimbo" id="selo" src="assets/carimbo-barco-sp_transp.png" alt="" width="150" height="108">
+          </div>
+        </div>
+        <p class="regra">Como a regra conta: vale um ponto o não na primeira pergunta e o sim em cada uma das outras duas. Três pontos, compra. Dois, espera. Um ou nenhum, deixa.</p>
+      </div>
+    </section>
+
+    <p class="fonte">O estudo citado no vídeo: McKinsey, “Style that’s sustainable: A new fast-fashion formula”, 2016.</p>
+    </div>
+
+  </main>
+</div>
+
+<section class="faixa" aria-label="A frase do vídeo">
+  <div class="pagina">
+    <div class="rotulo">A frase do vídeo</div>
+    <p class="grande"><span>A nossa geração compra mais.</span><span class="volta">Quem veio antes <em>tinha mais.</em></span></p>
+    <p class="guarda">E eu não tô falando de roupa.</p>
+  </div>
+</section>
+
+<div class="pagina">
+  <footer class="rodape">
+    <div class="mesa-fim">
+      <img class="foto" src="assets/arquivo-p05-03.jpg" alt="Foto de arquivo: barcos num rio." width="720" height="501" loading="lazy">
+      <img class="carimbo" src="assets/carimbo-barco-sp_transp.png" alt="" width="150" height="108" loading="lazy">
+    </div>
+    <img class="wordmark" src="assets/wm-v3-b-179-sp-tinta.svg" alt="Moujaës, número 179, São Paulo" width="230" height="81" loading="lazy">
+    <nav class="links" aria-label="Moujaës nas redes">
+      <a href="https://www.instagram.com/moujaes_________179/" rel="noopener">Instagram</a>
+      <a href="https://www.youtube.com/@lutchpromicia" rel="noopener">YouTube</a>
+    </nav>
+    <div class="arroba">@moujaes_________179</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CHAVE = "moujaes-armario-v1";
+  var TOTAL = 5; // 2 números + 3 perguntas
+  var MAX = 9999;
+  var EXTENSO = ["", "uma", "duas", "três", "quatro"];
+  var RESULTADOS = {
+    compra: ["Compra.", "Ela já tem lugar no armário. Pode levar."],
+    espera: ["Espera.", "Deixa passar uma semana. Se ainda lembrar dela, volta."],
+    deixa: ["Deixa.", "Ela ia virar mais uma parada. Deixa na loja."]
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var ficha = $("ficha"), conta = $("conta");
+  var total = $("total"), usadas = $("usadas");
+  var cTotal = $("c-total"), cUsadas = $("c-usadas");
+  var aviso = $("aviso"), usou = $("usou"), barra = $("barra"), fracao = $("fracao");
+  var legU = $("leg-usadas"), legP = $("leg-paradas"), paradasT = $("paradas-t");
+  var resumo = $("resumo"), veredito = $("veredito"), linha = $("linha"), limpar = $("limpar");
+  var pips = Array.prototype.slice.call(document.querySelectorAll("#pips i"));
+  var perguntas = [1, 2, 3].map(function (i) {
+    return { li: $("q" + i), s: $("p" + i + "-sim"), n: $("p" + i + "-nao") };
+  });
+
+  // #r=80.12.nss (ou ?r=) abre a página já preenchida, sem ler nem gravar neste navegador.
+  // total . usadas . uma letra por pergunta (s = sim, n = não, - = em branco). Número vazio = em branco.
+  function pedidoDaUrl() {
+    var re = /(?:^|[#?&])r=(\d*)\.(\d*)\.([sn\-]{0,3})/i;
+    var m = re.exec(location.hash) || re.exec(location.search);
+    return m ? { t: m[1], u: m[2], q: m[3].toLowerCase() } : null;
+  }
+  var pedido = pedidoDaUrl();
+  var guarda = pedido === null;
+
+  function num(el) {
+    if (el.value === "") return null;
+    var v = parseInt(el.value, 10);
+    return isNaN(v) ? null : Math.max(0, Math.min(MAX, v));
+  }
+  function estado() {
+    return {
+      t: total.value === "" ? "" : String(num(total)),
+      u: usadas.value === "" ? "" : String(num(usadas)),
+      q: perguntas.map(function (p) { return p.s.checked ? "s" : p.n.checked ? "n" : "-"; }).join("")
+    };
+  }
+  function aplicar(e) {
+    e = e || { t: "", u: "", q: "" };
+    total.value = e.t || "";
+    usadas.value = e.u || "";
+    perguntas.forEach(function (p, i) {
+      var c = (e.q || "").charAt(i);
+      p.s.checked = c === "s";
+      p.n.checked = c === "n";
+    });
+  }
+  function ler() {
+    try { return JSON.parse(localStorage.getItem(CHAVE) || "null"); } catch (e) { return null; }
+  }
+  function gravar() {
+    if (!guarda) return;
+    try { localStorage.setItem(CHAVE, JSON.stringify(estado())); } catch (e) {}
+  }
+
+  var antes = -1;
+  var completaAntes = false;
+  function atualizar(porToque) {
+    var t = num(total), u = num(usadas);
+    var e = estado();
+
+    // usadas não passa do total: avisa e não conta até corrigir (sem mexer no que a pessoa digitou)
+    var passou = t !== null && u !== null && u > t;
+    aviso.textContent = passou ? "Usadas passou do total. Confere os dois números." : "";
+
+    var feitos = [t !== null && t > 0, u !== null && !passou];
+    var nPerg = 0, pontos = 0;
+    perguntas.forEach(function (p, i) {
+      var c = e.q.charAt(i);
+      var resp = c !== "-";
+      if (resp) nPerg++;
+      if ((i === 0 && c === "n") || (i > 0 && c === "s")) pontos++;
+      p.li.classList.toggle("respondida", resp);
+    });
+    cTotal.classList.toggle("cheio", feitos[0]);
+    cUsadas.classList.toggle("cheio", feitos[1]);
+    $("parte-conta").classList.toggle("feita", feitos[0] && feitos[1]);
+
+    var marcados = [feitos[0], feitos[1]].concat(perguntas.map(function (p) { return p.s.checked || p.n.checked; }));
+    var n = marcados.filter(Boolean).length;
+    marcados.forEach(function (m, i) { pips[i].classList.toggle("cheio", m); });
+
+    conta.textContent = n + " de " + TOTAL;
+    if (porToque && n !== antes) {
+      conta.classList.remove("bate");
+      void conta.offsetWidth;
+      conta.classList.add("bate");
+    }
+
+    // a conta
+    var temConta = feitos[0] && feitos[1];
+    if (temConta) {
+      var paradas = t - u;
+      usou.innerHTML = "Você usou <em>" + u + "</em> de " + t + ".";
+      barra.style.width = (u / t * 100) + "%";
+      legU.textContent = u;
+      legP.textContent = paradas;
+      var r = u / t;
+      var frase;
+      if (u === 0) frase = "Nenhuma nos últimos 30 dias.";
+      else if (u === t) frase = "Todas.";
+      else if (r > .5) frase = "Mais da metade.";
+      else frase = "Mais ou menos uma em cada " + Math.round(t / u) + ".";
+      fracao.textContent = u + "/" + t + ". " + frase;
+      paradasT.innerHTML = paradas === 0
+        ? "Nenhuma parada. Se aparecer uma, ela cabe numa destas <em>três pilhas.</em>"
+        : (paradas === 1 ? "Sobrou 1 parada. Ela cabe" : "Sobraram " + paradas + " paradas. Cada uma cabe") + " numa destas <em>três pilhas.</em>";
+      resumo.textContent = "Usou " + u + " de " + t;
+    } else {
+      usou.textContent = "Você usou — de —.";
+      barra.style.width = "0%";
+      legU.textContent = "0";
+      legP.textContent = "0";
+      fracao.textContent = "Preenche os dois números.";
+      paradasT.innerHTML = "Cada parada cabe numa destas <em>três pilhas.</em>";
+      resumo.textContent = "Seu armário";
+    }
+
+    // o resultado
+    var completa = n === TOTAL;
+    var chegou = completa && !completaAntes;
+    ficha.classList.toggle("completa", completa);
+    ficha.classList.toggle("carimbando", chegou && porToque);
+    limpar.hidden = n === 0;
+    if (n === 0) {
+      veredito.textContent = "Nada preenchido.";
+      linha.textContent = "Começa contando as peças.";
+      ficha.removeAttribute("data-res");
+    } else if (!completa) {
+      var falta = TOTAL - n;
+      veredito.textContent = (falta === 1 ? "Falta " : "Faltam ") + EXTENSO[falta] + ".";
+      linha.textContent = "O resultado sai com os dois números e as três respostas.";
+      ficha.removeAttribute("data-res");
+    } else {
+      var res = pontos === 3 ? "compra" : pontos === 2 ? "espera" : "deixa";
+      veredito.textContent = RESULTADOS[res][0];
+      linha.textContent = RESULTADOS[res][1];
+      ficha.setAttribute("data-res", res);
+    }
+    antes = n;
+    completaAntes = completa;
+  }
+
+  aplicar(guarda ? ler() : pedido);
+
+  [total, usadas].forEach(function (el) {
+    el.addEventListener("input", function () {
+      if (el.value.length > 4) el.value = el.value.slice(0, 4);
+      atualizar(true);
+      gravar();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".contador button"), function (b) {
+    b.addEventListener("click", function () {
+      var el = $(b.getAttribute("data-alvo"));
+      var v = num(el);
+      var novo = Math.max(0, Math.min(MAX, (v === null ? 0 : v) + parseInt(b.getAttribute("data-passo"), 10)));
+      el.value = novo;
+      atualizar(true);
+      gravar();
+    });
+  });
+  perguntas.forEach(function (p) {
+    [p.s, p.n].forEach(function (r) {
+      r.addEventListener("change", function () { atualizar(true); gravar(); });
+    });
+  });
+
+  limpar.addEventListener("click", function () {
+    aplicar(null);
+    atualizar(true);
+    gravar();
+    ficha.scrollIntoView({ block: "start" });
+  });
+
+  window.addEventListener("hashchange", function () {
+    var novo = pedidoDaUrl();
+    if (novo === null) return;
+    guarda = false;
+    aplicar(novo);
+    completaAntes = true; // troca pela URL não bate o carimbo
+    atualizar(false);
+  });
+
+  atualizar(false);
+})();
+</script>
+</body>
+</html>
